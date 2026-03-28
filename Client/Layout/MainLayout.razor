@@ -1,0 +1,76 @@
+@inherits LayoutComponentBase
+@implements IDisposable
+@using System.Security.Claims
+@inject UiCultureService Ui
+@inject JwtAuthenticationStateProvider Auth
+@inject NavigationManager Nav
+<div class="d-flex flex-column min-vh-100">
+    <header class="navbar navbar-expand-lg navbar-light bg-light border-bottom shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-semibold" href="/">Ben Academy</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"
+                    aria-controls="nav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="nav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">@Ui.T("nav_home")</a>
+                    </li>
+                    <AuthorizeView Roles="@AppRoles.Student">
+                        <Authorized>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/ben">@Ui.T("nav_ben")</a>
+                            </li>
+                        </Authorized>
+                    </AuthorizeView>
+                </ul>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <div class="btn-group btn-group-sm" role="group">
+                        <button type="button" class="btn @(Ui.Culture == "en" ? "btn-primary" : "btn-outline-primary")"
+                                @onclick='() => SetLang("en")'>@Ui.T("lang_en")</button>
+                        <button type="button" class="btn @(Ui.Culture == "mn" ? "btn-primary" : "btn-outline-primary")"
+                                @onclick='() => SetLang("mn")'>@Ui.T("lang_mn")</button>
+                    </div>
+                    <AuthorizeView>
+                        <Authorized>
+                            <span class="small text-muted me-2">@(context.User.FindFirst(ClaimTypes.Email)?.Value ?? context.User.Identity?.Name)</span>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="LogoutAsync">@Ui.T("logout")</button>
+                        </Authorized>
+                        <NotAuthorized>
+                            <a class="btn btn-sm btn-outline-primary" href="/login">@Ui.T("cta_login")</a>
+                            <a class="btn btn-sm btn-primary" href="/register">@Ui.T("cta_signup")</a>
+                        </NotAuthorized>
+                    </AuthorizeView>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow-1">
+        @Body
+    </main>
+
+    <footer class="border-top py-3 bg-white mt-auto">
+        <div class="container small text-muted text-center">
+            @Ui.T("footer_contact")
+        </div>
+    </footer>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Ui.OnChange += StateHasChanged;
+    }
+
+    private async Task SetLang(string c) => await Ui.SetCultureAsync(c);
+
+    private async Task LogoutAsync()
+    {
+        await Auth.SignOutAsync();
+        Nav.NavigateTo("/", true);
+    }
+
+    public void Dispose() => Ui.OnChange -= StateHasChanged;
+}
