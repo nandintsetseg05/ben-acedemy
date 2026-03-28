@@ -3,13 +3,25 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Ben Academy API specification
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: tests
+    description: Writing test operations
+  - name: submissions
+    description: Submission operations
+  - name: ben
+    description: AI grading operations
+  - name: dashboard
+    description: Student dashboard operations
+  - name: payments
+    description: Stripe payment operations
 paths:
   /healthz:
     get:
@@ -24,7 +36,377 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterBody"
+      responses:
+        "201":
+          description: Registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Email already in use
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginBody"
+      responses:
+        "200":
+          description: Logged in successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /tests:
+    get:
+      operationId: listTests
+      tags: [tests]
+      summary: List all available writing tests
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of tests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Test"
+
+  /tests/{id}:
+    get:
+      operationId: getTest
+      tags: [tests]
+      summary: Get a specific writing test
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Test details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Test"
+        "403":
+          description: Paid test requires subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /submissions:
+    get:
+      operationId: listSubmissions
+      tags: [submissions]
+      summary: List submissions for the current user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of submissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Submission"
+
+    post:
+      operationId: createSubmission
+      tags: [submissions]
+      summary: Start a new submission for a test
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateSubmissionBody"
+      responses:
+        "201":
+          description: Submission created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Submission"
+        "403":
+          description: Paid test requires subscription
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /submissions/{id}:
+    get:
+      operationId: getSubmission
+      tags: [submissions]
+      summary: Get a submission by id
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Submission details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Submission"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /submissions/{id}/autosave:
+    patch:
+      operationId: autosaveSubmission
+      tags: [submissions]
+      summary: Auto-save submission answers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AutosaveBody"
+      responses:
+        "200":
+          description: Autosaved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Submission"
+        "403":
+          description: Submission already locked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /submissions/{id}/submit:
+    post:
+      operationId: submitSubmission
+      tags: [submissions]
+      summary: Finalize and submit a writing test
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SubmitBody"
+      responses:
+        "200":
+          description: Submission submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Submission"
+        "403":
+          description: Already submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /ben/grade:
+    post:
+      operationId: gradeSubmission
+      tags: [ben]
+      summary: Grade a submission using AI
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GradeBody"
+      responses:
+        "200":
+          description: Grading result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GradeResult"
+        "400":
+          description: Validation or flagged content error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /dashboard:
+    get:
+      operationId: getDashboard
+      tags: [dashboard]
+      summary: Get student dashboard data
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Dashboard data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardData"
+
+  /payments/create-checkout:
+    post:
+      operationId: createCheckout
+      tags: [payments]
+      summary: Create a Stripe checkout session for subscription
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Checkout session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutResponse"
+
+  /payments/webhook:
+    post:
+      operationId: stripeWebhook
+      tags: [payments]
+      summary: Stripe webhook endpoint
+      responses:
+        "200":
+          description: Webhook processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookResponse"
+
+  /payments/portal:
+    post:
+      operationId: createPortal
+      tags: [payments]
+      summary: Create a Stripe customer portal session
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Portal session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortalResponse"
+
+  /payments/status:
+    get:
+      operationId: getSubscriptionStatus
+      tags: [payments]
+      summary: Get current user's subscription status
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Subscription status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SubscriptionStatus"
+
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
   schemas:
     HealthStatus:
       type: object
@@ -34,3 +416,346 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required:
+        - error
+
+    RegisterBody:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        name:
+          type: string
+        currentBand:
+          type: number
+          minimum: 0
+          maximum: 9
+        targetBand:
+          type: number
+          minimum: 0
+          maximum: 9
+      required:
+        - email
+        - password
+        - name
+
+    LoginBody:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+      required:
+        - token
+        - user
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum: [student, admin]
+        currentBand:
+          type: number
+          nullable: true
+        targetBand:
+          type: number
+          nullable: true
+        isPaid:
+          type: boolean
+        stripeCustomerId:
+          type: string
+          nullable: true
+        subscriptionStatus:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - email
+        - name
+        - role
+        - isPaid
+        - createdAt
+
+    Test:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        prompt:
+          type: string
+        durationMinutes:
+          type: integer
+        isPaid:
+          type: boolean
+        difficulty:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - description
+        - prompt
+        - durationMinutes
+        - isPaid
+        - difficulty
+        - createdAt
+
+    Submission:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        testId:
+          type: integer
+        answers:
+          type: string
+          nullable: true
+        score:
+          type: number
+          nullable: true
+        aiFeedback:
+          type: string
+          nullable: true
+        status:
+          type: string
+          enum: [InProgress, Submitted, TimeExpired]
+        flaggedForReview:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        lastAutoSave:
+          type: string
+          format: date-time
+          nullable: true
+        submittedAt:
+          type: string
+          format: date-time
+          nullable: true
+        test:
+          $ref: "#/components/schemas/Test"
+          nullable: true
+      required:
+        - id
+        - userId
+        - testId
+        - status
+        - flaggedForReview
+        - createdAt
+
+    CreateSubmissionBody:
+      type: object
+      properties:
+        testId:
+          type: integer
+      required:
+        - testId
+
+    AutosaveBody:
+      type: object
+      properties:
+        answers:
+          type: string
+      required:
+        - answers
+
+    SubmitBody:
+      type: object
+      properties:
+        answers:
+          type: string
+        expired:
+          type: boolean
+      required:
+        - answers
+
+    GradeBody:
+      type: object
+      properties:
+        submissionId:
+          type: integer
+        essayText:
+          type: string
+        currentBand:
+          type: number
+        targetBand:
+          type: number
+      required:
+        - submissionId
+        - essayText
+
+    GradeResult:
+      type: object
+      properties:
+        bandScore:
+          type: number
+        flagged:
+          type: boolean
+        detailedFeedback:
+          type: object
+          properties:
+            taskAchievement:
+              type: string
+            coherenceCohesion:
+              type: string
+            lexicalResource:
+              type: string
+            grammaticalRange:
+              type: string
+          required:
+            - taskAchievement
+            - coherenceCohesion
+            - lexicalResource
+            - grammaticalRange
+        suggestedTasks:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              description:
+                type: string
+            required:
+              - title
+              - description
+        overallSummary:
+          type: string
+      required:
+        - bandScore
+        - flagged
+        - detailedFeedback
+        - suggestedTasks
+        - overallSummary
+
+    DashboardData:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        submissions:
+          type: array
+          items:
+            $ref: "#/components/schemas/Submission"
+        totalTests:
+          type: integer
+        averageScore:
+          type: number
+          nullable: true
+        progressData:
+          type: array
+          items:
+            type: object
+            properties:
+              date:
+                type: string
+              score:
+                type: number
+            required:
+              - date
+              - score
+        weaknesses:
+          type: array
+          items:
+            type: string
+        suggestedTasks:
+          type: array
+          items:
+            type: object
+            properties:
+              title:
+                type: string
+              description:
+                type: string
+            required:
+              - title
+              - description
+      required:
+        - user
+        - submissions
+        - totalTests
+        - progressData
+        - weaknesses
+        - suggestedTasks
+
+    CheckoutResponse:
+      type: object
+      properties:
+        url:
+          type: string
+      required:
+        - url
+
+    WebhookResponse:
+      type: object
+      properties:
+        received:
+          type: boolean
+      required:
+        - received
+
+    PortalResponse:
+      type: object
+      properties:
+        url:
+          type: string
+      required:
+        - url
+
+    SubscriptionStatus:
+      type: object
+      properties:
+        isPaid:
+          type: boolean
+        subscriptionStatus:
+          type: string
+          nullable: true
+        currentPeriodEnd:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - isPaid

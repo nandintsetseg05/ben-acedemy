@@ -1,0 +1,82 @@
+You are a senior C# full-stack developer. 
+I want you to create **Sprint 2 of the Ben Academy MVP** using ASP.NET Core Web API with Blazor WebAssembly frontend. The focus is **secure writing tests, AI grading, student dashboard, and Stripe payments**. Follow these steps carefully:
+
+---
+
+1. **Test Engine - Writing Task**
+   - Create a secure writing test page in Blazor.
+   - Features:
+     - Timer for the test (e.g., 40 minutes)
+     - Auto-save every 30 seconds to backend
+     - Lock editor after submission or time expiry
+     - Prevent multiple tab/window switching (warn student)
+     - Backend stores submissions with status: `InProgress`, `Submitted`, `TimeExpired`
+   - EF Core `Submission` model fields:
+     - Id, UserId, TestId, Answers (JSON), Score, AiFeedback, CreatedAt, LastAutoSave, Status, FlaggedForReview
+
+---
+
+2. **AI Grading Integration (Ben AI)**
+   - Backend API route `/api/ben`:
+     - Accept JSON: `{ submissionId, essayText, currentBand, targetBand, userId }`
+     - Connect to OpenAI API using C# SDK
+     - Return:
+       - `bandScore` (0–9)
+       - `detailedFeedback` (structured JSON)
+       - `suggestedTasks` (array of task objects)
+     - Detect suspicious/copy-paste content:
+       - Use embedding similarity or string comparison
+       - If flagged, return `"flagged": true` and prevent score assignment
+     - Save AI response to `Submission` table
+
+---
+
+3. **Student Dashboard**
+   - Show:
+     - Past submissions with scores
+     - AI feedback
+     - Test status (InProgress, Submitted, TimeExpired)
+     - Weakness analysis (based on AI feedback)
+     - Suggested next tasks (from AI)
+   - Responsive UI in Blazor
+   - Display progress graph (optional using Chart.js or Blazor chart library)
+
+---
+
+4. **Stripe Payment Integration**
+   - Use **Stripe.NET SDK**
+   - Features:
+     - Monthly subscription payment
+     - Free vs paid test access
+     - Webhook to verify successful payment
+     - Save subscription info in database
+   - Show paid access features in the dashboard
+   - Secure endpoints to prevent unauthorized access
+
+---
+
+5. **Security**
+   - JWT authentication for all API calls
+   - Role-based authorization (student only)
+   - Validate all inputs using FluentValidation or DataAnnotations
+   - Rate-limit `/api/ben` endpoint to prevent abuse
+   - HTTPS enabled
+
+---
+
+6. **Project Structure**
+   - `/Server` → Web API + EF Core models + controllers
+   - `/Client` → Blazor WebAssembly frontend pages (Test, Dashboard)
+   - `/Shared` → models (User, Profile, Test, Submission, AIFeedback)
+   - `/Services` → Stripe, OpenAI, AutoSave, TestTimer
+
+---
+
+7. **Output Requirements**
+   - Fully scaffolded project with:
+     - Secure writing test workflow
+     - AI grading integrated
+     - Dashboard showing history, feedback, and suggestions
+     - Stripe payment ready
+   - Instructions to run migrations, start backend and frontend
+   - Ensure **everything works on Replit** using SQLite or PostgreSQL
