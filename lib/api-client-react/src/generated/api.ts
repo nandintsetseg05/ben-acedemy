@@ -19,20 +19,28 @@ import type {
 import type {
   AuthResponse,
   AutosaveBody,
+  BookingDetail,
   CheckoutResponse,
+  CompleteBookingBody,
+  CreateBookingBody,
   CreateSubmissionBody,
   DashboardData,
   ErrorResponse,
   GradeBody,
   GradeResult,
   HealthStatus,
+  ListTeachersParams,
   LoginBody,
+  NotificationItem,
   PortalResponse,
   RegisterBody,
+  RespondBookingBody,
   Submission,
   SubmitBody,
   SubscriptionStatus,
+  TeacherProfile,
   Test,
+  UpsertTeacherBody,
   User,
   WebhookResponse,
 } from "./api.schemas";
@@ -1399,3 +1407,1082 @@ export function useGetSubscriptionStatus<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary List all teachers (marketplace)
+ */
+export const getListTeachersUrl = (params?: ListTeachersParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/teachers?${stringifiedParams}`
+    : `/api/teachers`;
+};
+
+export const listTeachers = async (
+  params?: ListTeachersParams,
+  options?: RequestInit,
+): Promise<TeacherProfile[]> => {
+  return customFetch<TeacherProfile[]>(getListTeachersUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListTeachersQueryKey = (params?: ListTeachersParams) => {
+  return [`/api/teachers`, ...(params ? [params] : [])] as const;
+};
+
+export const getListTeachersQueryOptions = <
+  TData = Awaited<ReturnType<typeof listTeachers>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListTeachersParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listTeachers>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListTeachersQueryKey(params);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listTeachers>>> = ({
+    signal,
+  }) => listTeachers(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listTeachers>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListTeachersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listTeachers>>
+>;
+export type ListTeachersQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all teachers (marketplace)
+ */
+
+export function useListTeachers<
+  TData = Awaited<ReturnType<typeof listTeachers>>,
+  TError = ErrorType<unknown>,
+>(
+  params?: ListTeachersParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listTeachers>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListTeachersQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get own teacher profile
+ */
+export const getGetMyTeacherProfileUrl = () => {
+  return `/api/teachers/me`;
+};
+
+export const getMyTeacherProfile = async (
+  options?: RequestInit,
+): Promise<TeacherProfile> => {
+  return customFetch<TeacherProfile>(getGetMyTeacherProfileUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetMyTeacherProfileQueryKey = () => {
+  return [`/api/teachers/me`] as const;
+};
+
+export const getGetMyTeacherProfileQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMyTeacherProfile>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getMyTeacherProfile>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMyTeacherProfileQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getMyTeacherProfile>>
+  > = ({ signal }) => getMyTeacherProfile({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMyTeacherProfile>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetMyTeacherProfileQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMyTeacherProfile>>
+>;
+export type GetMyTeacherProfileQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get own teacher profile
+ */
+
+export function useGetMyTeacherProfile<
+  TData = Awaited<ReturnType<typeof getMyTeacherProfile>>,
+  TError = ErrorType<ErrorResponse>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getMyTeacherProfile>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetMyTeacherProfileQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create or update own teacher profile
+ */
+export const getUpsertTeacherProfileUrl = () => {
+  return `/api/teachers/me`;
+};
+
+export const upsertTeacherProfile = async (
+  upsertTeacherBody: UpsertTeacherBody,
+  options?: RequestInit,
+): Promise<TeacherProfile> => {
+  return customFetch<TeacherProfile>(getUpsertTeacherProfileUrl(), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(upsertTeacherBody),
+  });
+};
+
+export const getUpsertTeacherProfileMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof upsertTeacherProfile>>,
+    TError,
+    { data: BodyType<UpsertTeacherBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof upsertTeacherProfile>>,
+  TError,
+  { data: BodyType<UpsertTeacherBody> },
+  TContext
+> => {
+  const mutationKey = ["upsertTeacherProfile"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof upsertTeacherProfile>>,
+    { data: BodyType<UpsertTeacherBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return upsertTeacherProfile(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpsertTeacherProfileMutationResult = NonNullable<
+  Awaited<ReturnType<typeof upsertTeacherProfile>>
+>;
+export type UpsertTeacherProfileMutationBody = BodyType<UpsertTeacherBody>;
+export type UpsertTeacherProfileMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create or update own teacher profile
+ */
+export const useUpsertTeacherProfile = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof upsertTeacherProfile>>,
+    TError,
+    { data: BodyType<UpsertTeacherBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof upsertTeacherProfile>>,
+  TError,
+  { data: BodyType<UpsertTeacherBody> },
+  TContext
+> => {
+  return useMutation(getUpsertTeacherProfileMutationOptions(options));
+};
+
+/**
+ * @summary Get a specific teacher profile
+ */
+export const getGetTeacherUrl = (id: number) => {
+  return `/api/teachers/${id}`;
+};
+
+export const getTeacher = async (
+  id: number,
+  options?: RequestInit,
+): Promise<TeacherProfile> => {
+  return customFetch<TeacherProfile>(getGetTeacherUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetTeacherQueryKey = (id: number) => {
+  return [`/api/teachers/${id}`] as const;
+};
+
+export const getGetTeacherQueryOptions = <
+  TData = Awaited<ReturnType<typeof getTeacher>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getTeacher>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetTeacherQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getTeacher>>> = ({
+    signal,
+  }) => getTeacher(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getTeacher>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetTeacherQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getTeacher>>
+>;
+export type GetTeacherQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get a specific teacher profile
+ */
+
+export function useGetTeacher<
+  TData = Awaited<ReturnType<typeof getTeacher>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getTeacher>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetTeacherQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Student requests a 1:1 session
+ */
+export const getCreateBookingUrl = () => {
+  return `/api/bookings`;
+};
+
+export const createBooking = async (
+  createBookingBody: CreateBookingBody,
+  options?: RequestInit,
+): Promise<BookingDetail> => {
+  return customFetch<BookingDetail>(getCreateBookingUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createBookingBody),
+  });
+};
+
+export const getCreateBookingMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createBooking>>,
+    TError,
+    { data: BodyType<CreateBookingBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createBooking>>,
+  TError,
+  { data: BodyType<CreateBookingBody> },
+  TContext
+> => {
+  const mutationKey = ["createBooking"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createBooking>>,
+    { data: BodyType<CreateBookingBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createBooking(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateBookingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createBooking>>
+>;
+export type CreateBookingMutationBody = BodyType<CreateBookingBody>;
+export type CreateBookingMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Student requests a 1:1 session
+ */
+export const useCreateBooking = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createBooking>>,
+    TError,
+    { data: BodyType<CreateBookingBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createBooking>>,
+  TError,
+  { data: BodyType<CreateBookingBody> },
+  TContext
+> => {
+  return useMutation(getCreateBookingMutationOptions(options));
+};
+
+/**
+ * @summary Get all bookings for the current student
+ */
+export const getListStudentBookingsUrl = () => {
+  return `/api/bookings/student`;
+};
+
+export const listStudentBookings = async (
+  options?: RequestInit,
+): Promise<BookingDetail[]> => {
+  return customFetch<BookingDetail[]>(getListStudentBookingsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListStudentBookingsQueryKey = () => {
+  return [`/api/bookings/student`] as const;
+};
+
+export const getListStudentBookingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listStudentBookings>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listStudentBookings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListStudentBookingsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listStudentBookings>>
+  > = ({ signal }) => listStudentBookings({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listStudentBookings>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListStudentBookingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listStudentBookings>>
+>;
+export type ListStudentBookingsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get all bookings for the current student
+ */
+
+export function useListStudentBookings<
+  TData = Awaited<ReturnType<typeof listStudentBookings>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listStudentBookings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListStudentBookingsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get all bookings for the current teacher
+ */
+export const getListTeacherBookingsUrl = () => {
+  return `/api/bookings/teacher`;
+};
+
+export const listTeacherBookings = async (
+  options?: RequestInit,
+): Promise<BookingDetail[]> => {
+  return customFetch<BookingDetail[]>(getListTeacherBookingsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListTeacherBookingsQueryKey = () => {
+  return [`/api/bookings/teacher`] as const;
+};
+
+export const getListTeacherBookingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listTeacherBookings>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listTeacherBookings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListTeacherBookingsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listTeacherBookings>>
+  > = ({ signal }) => listTeacherBookings({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listTeacherBookings>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListTeacherBookingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listTeacherBookings>>
+>;
+export type ListTeacherBookingsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get all bookings for the current teacher
+ */
+
+export function useListTeacherBookings<
+  TData = Awaited<ReturnType<typeof listTeacherBookings>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listTeacherBookings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListTeacherBookingsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get a specific booking
+ */
+export const getGetBookingUrl = (id: number) => {
+  return `/api/bookings/${id}`;
+};
+
+export const getBooking = async (
+  id: number,
+  options?: RequestInit,
+): Promise<BookingDetail> => {
+  return customFetch<BookingDetail>(getGetBookingUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetBookingQueryKey = (id: number) => {
+  return [`/api/bookings/${id}`] as const;
+};
+
+export const getGetBookingQueryOptions = <
+  TData = Awaited<ReturnType<typeof getBooking>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getBooking>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetBookingQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getBooking>>> = ({
+    signal,
+  }) => getBooking(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getBooking>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetBookingQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getBooking>>
+>;
+export type GetBookingQueryError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Get a specific booking
+ */
+
+export function useGetBooking<
+  TData = Awaited<ReturnType<typeof getBooking>>,
+  TError = ErrorType<ErrorResponse>,
+>(
+  id: number,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getBooking>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetBookingQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Teacher accepts or declines a booking
+ */
+export const getRespondToBookingUrl = (id: number) => {
+  return `/api/bookings/${id}/respond`;
+};
+
+export const respondToBooking = async (
+  id: number,
+  respondBookingBody: RespondBookingBody,
+  options?: RequestInit,
+): Promise<BookingDetail> => {
+  return customFetch<BookingDetail>(getRespondToBookingUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(respondBookingBody),
+  });
+};
+
+export const getRespondToBookingMutationOptions = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof respondToBooking>>,
+    TError,
+    { id: number; data: BodyType<RespondBookingBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof respondToBooking>>,
+  TError,
+  { id: number; data: BodyType<RespondBookingBody> },
+  TContext
+> => {
+  const mutationKey = ["respondToBooking"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof respondToBooking>>,
+    { id: number; data: BodyType<RespondBookingBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return respondToBooking(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RespondToBookingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof respondToBooking>>
+>;
+export type RespondToBookingMutationBody = BodyType<RespondBookingBody>;
+export type RespondToBookingMutationError = ErrorType<ErrorResponse>;
+
+/**
+ * @summary Teacher accepts or declines a booking
+ */
+export const useRespondToBooking = <
+  TError = ErrorType<ErrorResponse>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof respondToBooking>>,
+    TError,
+    { id: number; data: BodyType<RespondBookingBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof respondToBooking>>,
+  TError,
+  { id: number; data: BodyType<RespondBookingBody> },
+  TContext
+> => {
+  return useMutation(getRespondToBookingMutationOptions(options));
+};
+
+/**
+ * @summary Mark a booking as completed
+ */
+export const getCompleteBookingUrl = (id: number) => {
+  return `/api/bookings/${id}/complete`;
+};
+
+export const completeBooking = async (
+  id: number,
+  completeBookingBody: CompleteBookingBody,
+  options?: RequestInit,
+): Promise<BookingDetail> => {
+  return customFetch<BookingDetail>(getCompleteBookingUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(completeBookingBody),
+  });
+};
+
+export const getCompleteBookingMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof completeBooking>>,
+    TError,
+    { id: number; data: BodyType<CompleteBookingBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof completeBooking>>,
+  TError,
+  { id: number; data: BodyType<CompleteBookingBody> },
+  TContext
+> => {
+  const mutationKey = ["completeBooking"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof completeBooking>>,
+    { id: number; data: BodyType<CompleteBookingBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return completeBooking(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CompleteBookingMutationResult = NonNullable<
+  Awaited<ReturnType<typeof completeBooking>>
+>;
+export type CompleteBookingMutationBody = BodyType<CompleteBookingBody>;
+export type CompleteBookingMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Mark a booking as completed
+ */
+export const useCompleteBooking = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof completeBooking>>,
+    TError,
+    { id: number; data: BodyType<CompleteBookingBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof completeBooking>>,
+  TError,
+  { id: number; data: BodyType<CompleteBookingBody> },
+  TContext
+> => {
+  return useMutation(getCompleteBookingMutationOptions(options));
+};
+
+/**
+ * @summary List notifications for current user
+ */
+export const getListNotificationsUrl = () => {
+  return `/api/notifications`;
+};
+
+export const listNotifications = async (
+  options?: RequestInit,
+): Promise<NotificationItem[]> => {
+  return customFetch<NotificationItem[]>(getListNotificationsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListNotificationsQueryKey = () => {
+  return [`/api/notifications`] as const;
+};
+
+export const getListNotificationsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listNotifications>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listNotifications>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListNotificationsQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listNotifications>>
+  > = ({ signal }) => listNotifications({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listNotifications>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListNotificationsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listNotifications>>
+>;
+export type ListNotificationsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List notifications for current user
+ */
+
+export function useListNotifications<
+  TData = Awaited<ReturnType<typeof listNotifications>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listNotifications>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListNotificationsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Mark all notifications as read
+ */
+export const getMarkAllNotificationsReadUrl = () => {
+  return `/api/notifications/read-all`;
+};
+
+export const markAllNotificationsRead = async (
+  options?: RequestInit,
+): Promise<WebhookResponse> => {
+  return customFetch<WebhookResponse>(getMarkAllNotificationsReadUrl(), {
+    ...options,
+    method: "PUT",
+  });
+};
+
+export const getMarkAllNotificationsReadMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof markAllNotificationsRead>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof markAllNotificationsRead>>,
+  TError,
+  void,
+  TContext
+> => {
+  const mutationKey = ["markAllNotificationsRead"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof markAllNotificationsRead>>,
+    void
+  > = () => {
+    return markAllNotificationsRead(requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MarkAllNotificationsReadMutationResult = NonNullable<
+  Awaited<ReturnType<typeof markAllNotificationsRead>>
+>;
+
+export type MarkAllNotificationsReadMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Mark all notifications as read
+ */
+export const useMarkAllNotificationsRead = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof markAllNotificationsRead>>,
+    TError,
+    void,
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof markAllNotificationsRead>>,
+  TError,
+  void,
+  TContext
+> => {
+  return useMutation(getMarkAllNotificationsReadMutationOptions(options));
+};
+
+/**
+ * @summary Mark a notification as read
+ */
+export const getMarkNotificationReadUrl = (id: number) => {
+  return `/api/notifications/${id}/read`;
+};
+
+export const markNotificationRead = async (
+  id: number,
+  options?: RequestInit,
+): Promise<NotificationItem> => {
+  return customFetch<NotificationItem>(getMarkNotificationReadUrl(id), {
+    ...options,
+    method: "PUT",
+  });
+};
+
+export const getMarkNotificationReadMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof markNotificationRead>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof markNotificationRead>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  const mutationKey = ["markNotificationRead"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof markNotificationRead>>,
+    { id: number }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return markNotificationRead(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MarkNotificationReadMutationResult = NonNullable<
+  Awaited<ReturnType<typeof markNotificationRead>>
+>;
+
+export type MarkNotificationReadMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Mark a notification as read
+ */
+export const useMarkNotificationRead = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof markNotificationRead>>,
+    TError,
+    { id: number },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof markNotificationRead>>,
+  TError,
+  { id: number },
+  TContext
+> => {
+  return useMutation(getMarkNotificationReadMutationOptions(options));
+};

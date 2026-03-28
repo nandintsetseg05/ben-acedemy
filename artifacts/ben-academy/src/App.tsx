@@ -15,6 +15,10 @@ import TestRoom from "@/pages/TestRoom";
 import Grading from "@/pages/Grading";
 import SubmissionReview from "@/pages/SubmissionReview";
 import Upgrade from "@/pages/Upgrade";
+import TeacherMarketplace from "@/pages/TeacherMarketplace";
+import TeacherDetail from "@/pages/TeacherDetail";
+import TeacherDashboard from "@/pages/TeacherDashboard";
+import StudentBookings from "@/pages/StudentBookings";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -40,6 +44,7 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
       <Route path="/register" component={Register} />
+      <Route path="/teachers" component={TeacherMarketplace} />
       
       {/* Protected Routes */}
       <Route path="/dashboard">
@@ -59,6 +64,15 @@ function Router() {
       </Route>
       <Route path="/upgrade">
         {() => <ProtectedRoute component={Upgrade} />}
+      </Route>
+      <Route path="/teachers/:id">
+        {() => <ProtectedRoute component={TeacherDetail} />}
+      </Route>
+      <Route path="/teacher-dashboard">
+        {() => <ProtectedRoute component={TeacherDashboard} />}
+      </Route>
+      <Route path="/my-bookings">
+        {() => <ProtectedRoute component={StudentBookings} />}
       </Route>
 
       <Route component={NotFound} />

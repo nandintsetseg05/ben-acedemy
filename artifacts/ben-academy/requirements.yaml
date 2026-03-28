@@ -1,23 +1,11 @@
 packages:
-  "framer-motion": "For premium page transitions and UI micro-interactions"
-  "recharts": "For the student progress and band score line charts"
-  "lucide-react": "For UI icons across the platform"
-  "date-fns": "For formatting timestamps and countdown timers"
-  "clsx": "Utility for conditionally merging Tailwind classes"
-  "tailwind-merge": "Utility for merging Tailwind classes safely"
-  "@hookform/resolvers": "For Zod form validation"
-  "react-hook-form": "For robust form state management"
-  "zod": "For form schema validation"
+  "date-fns": "For formatting booking dates and times"
 
 images:
-  - path: "artifacts/ben-academy/public/images/hero-academic.png"
-    description: "A dark, moody, professional and highly polished 3D render of an elegant desk with a fountain pen, a glowing piece of paper, and subtle gold accents. Soft, cinematic lighting."
-    aspect_ratio: "16:9"
-  - path: "artifacts/ben-academy/public/images/ai-grading.png"
-    description: "An abstract, dark-themed visualization of artificial intelligence scanning a document. Glowing blue and gold data nodes overlaid on crisp typography."
-    aspect_ratio: "16:9"
+  - path: "artifacts/ben-academy/public/images/teacher-hero.png"
+    description: "Dark moody academic library setting with a warm glowing desk lamp and an elegant pen, suitable for an IELTS tutoring marketplace banner"
+    aspect_ratio: "21:9"
 
 notes:
-  - Assumes @workspace/api-client-react exposes the generated React Query hooks
-  - Uses standard browser localStorage for JWT auth token persistence
-  - Implements tab-switch visibility tracking for exam integrity
+  - Added components for Teacher Marketplace and 1:1 Bookings
+  - Added Notification Panel for real-time alerts

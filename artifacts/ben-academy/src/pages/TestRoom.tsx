@@ -3,6 +3,7 @@ import { useRoute, useLocation } from "wouter";
 import { useGetSubmission, useAutosaveSubmission, useSubmitSubmission } from "@workspace/api-client-react";
 import { getAuthHeaders, formatTime } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, Clock, Save, Send } from "lucide-react";

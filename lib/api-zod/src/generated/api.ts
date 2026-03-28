@@ -377,3 +377,403 @@ export const GetSubscriptionStatusResponse = zod.object({
   subscriptionStatus: zod.string().nullish(),
   currentPeriodEnd: zod.coerce.date().nullish(),
 });
+
+/**
+ * @summary List all teachers (marketplace)
+ */
+export const ListTeachersQueryParams = zod.object({
+  minScore: zod.coerce.number().optional(),
+  maxRate: zod.coerce.number().optional(),
+});
+
+export const ListTeachersResponseItem = zod.object({
+  id: zod.number(),
+  userId: zod.number(),
+  ieltScore: zod.number(),
+  bio: zod.string(),
+  hourlyRate: zod.number(),
+  availableTimes: zod.string(),
+  specializations: zod.string(),
+  totalSessions: zod.number(),
+  rating: zod.number().nullish(),
+  createdAt: zod.coerce.date(),
+  user: zod
+    .object({
+      name: zod.string(),
+      email: zod.string(),
+    })
+    .nullish(),
+  freeSessionsLeft: zod.number().nullish(),
+});
+export const ListTeachersResponse = zod.array(ListTeachersResponseItem);
+
+/**
+ * @summary Get own teacher profile
+ */
+export const GetMyTeacherProfileResponse = zod.object({
+  id: zod.number(),
+  userId: zod.number(),
+  ieltScore: zod.number(),
+  bio: zod.string(),
+  hourlyRate: zod.number(),
+  availableTimes: zod.string(),
+  specializations: zod.string(),
+  totalSessions: zod.number(),
+  rating: zod.number().nullish(),
+  createdAt: zod.coerce.date(),
+  user: zod
+    .object({
+      name: zod.string(),
+      email: zod.string(),
+    })
+    .nullish(),
+  freeSessionsLeft: zod.number().nullish(),
+});
+
+/**
+ * @summary Create or update own teacher profile
+ */
+export const upsertTeacherProfileBodyIeltScoreMin = 0;
+export const upsertTeacherProfileBodyIeltScoreMax = 9;
+
+export const upsertTeacherProfileBodyHourlyRateMin = 0;
+
+export const UpsertTeacherProfileBody = zod.object({
+  ieltScore: zod
+    .number()
+    .min(upsertTeacherProfileBodyIeltScoreMin)
+    .max(upsertTeacherProfileBodyIeltScoreMax)
+    .optional(),
+  bio: zod.string().optional(),
+  hourlyRate: zod
+    .number()
+    .min(upsertTeacherProfileBodyHourlyRateMin)
+    .optional(),
+  availableTimes: zod.string().optional(),
+  specializations: zod.string().optional(),
+});
+
+export const UpsertTeacherProfileResponse = zod.object({
+  id: zod.number(),
+  userId: zod.number(),
+  ieltScore: zod.number(),
+  bio: zod.string(),
+  hourlyRate: zod.number(),
+  availableTimes: zod.string(),
+  specializations: zod.string(),
+  totalSessions: zod.number(),
+  rating: zod.number().nullish(),
+  createdAt: zod.coerce.date(),
+  user: zod
+    .object({
+      name: zod.string(),
+      email: zod.string(),
+    })
+    .nullish(),
+  freeSessionsLeft: zod.number().nullish(),
+});
+
+/**
+ * @summary Get a specific teacher profile
+ */
+export const GetTeacherParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetTeacherResponse = zod.object({
+  id: zod.number(),
+  userId: zod.number(),
+  ieltScore: zod.number(),
+  bio: zod.string(),
+  hourlyRate: zod.number(),
+  availableTimes: zod.string(),
+  specializations: zod.string(),
+  totalSessions: zod.number(),
+  rating: zod.number().nullish(),
+  createdAt: zod.coerce.date(),
+  user: zod
+    .object({
+      name: zod.string(),
+      email: zod.string(),
+    })
+    .nullish(),
+  freeSessionsLeft: zod.number().nullish(),
+});
+
+/**
+ * @summary Student requests a 1:1 session
+ */
+export const createBookingBodyDurationMinutesDefault = 60;
+
+export const CreateBookingBody = zod.object({
+  teacherId: zod.number(),
+  sessionTime: zod.coerce.date(),
+  durationMinutes: zod
+    .number()
+    .default(createBookingBodyDurationMinutesDefault),
+  studentMessage: zod.string().optional(),
+});
+
+/**
+ * @summary Get all bookings for the current student
+ */
+export const ListStudentBookingsResponseItem = zod.object({
+  id: zod.number(),
+  studentId: zod.number(),
+  teacherId: zod.number(),
+  sessionTime: zod.coerce.date(),
+  durationMinutes: zod.number(),
+  status: zod.enum(["Pending", "Confirmed", "Declined", "Completed"]),
+  paymentStatus: zod.enum(["Free", "Paid", "Required"]),
+  studentMessage: zod.string().nullish(),
+  teacherNote: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+  teacher: zod
+    .object({
+      id: zod.number(),
+      userId: zod.number(),
+      ieltScore: zod.number(),
+      bio: zod.string(),
+      hourlyRate: zod.number(),
+      availableTimes: zod.string(),
+      specializations: zod.string(),
+      totalSessions: zod.number(),
+      rating: zod.number().nullish(),
+      createdAt: zod.coerce.date(),
+      user: zod
+        .object({
+          name: zod.string(),
+          email: zod.string(),
+        })
+        .nullish(),
+      freeSessionsLeft: zod.number().nullish(),
+    })
+    .nullish(),
+  studentName: zod.string().nullish(),
+});
+export const ListStudentBookingsResponse = zod.array(
+  ListStudentBookingsResponseItem,
+);
+
+/**
+ * @summary Get all bookings for the current teacher
+ */
+export const ListTeacherBookingsResponseItem = zod.object({
+  id: zod.number(),
+  studentId: zod.number(),
+  teacherId: zod.number(),
+  sessionTime: zod.coerce.date(),
+  durationMinutes: zod.number(),
+  status: zod.enum(["Pending", "Confirmed", "Declined", "Completed"]),
+  paymentStatus: zod.enum(["Free", "Paid", "Required"]),
+  studentMessage: zod.string().nullish(),
+  teacherNote: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+  teacher: zod
+    .object({
+      id: zod.number(),
+      userId: zod.number(),
+      ieltScore: zod.number(),
+      bio: zod.string(),
+      hourlyRate: zod.number(),
+      availableTimes: zod.string(),
+      specializations: zod.string(),
+      totalSessions: zod.number(),
+      rating: zod.number().nullish(),
+      createdAt: zod.coerce.date(),
+      user: zod
+        .object({
+          name: zod.string(),
+          email: zod.string(),
+        })
+        .nullish(),
+      freeSessionsLeft: zod.number().nullish(),
+    })
+    .nullish(),
+  studentName: zod.string().nullish(),
+});
+export const ListTeacherBookingsResponse = zod.array(
+  ListTeacherBookingsResponseItem,
+);
+
+/**
+ * @summary Get a specific booking
+ */
+export const GetBookingParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const GetBookingResponse = zod.object({
+  id: zod.number(),
+  studentId: zod.number(),
+  teacherId: zod.number(),
+  sessionTime: zod.coerce.date(),
+  durationMinutes: zod.number(),
+  status: zod.enum(["Pending", "Confirmed", "Declined", "Completed"]),
+  paymentStatus: zod.enum(["Free", "Paid", "Required"]),
+  studentMessage: zod.string().nullish(),
+  teacherNote: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+  teacher: zod
+    .object({
+      id: zod.number(),
+      userId: zod.number(),
+      ieltScore: zod.number(),
+      bio: zod.string(),
+      hourlyRate: zod.number(),
+      availableTimes: zod.string(),
+      specializations: zod.string(),
+      totalSessions: zod.number(),
+      rating: zod.number().nullish(),
+      createdAt: zod.coerce.date(),
+      user: zod
+        .object({
+          name: zod.string(),
+          email: zod.string(),
+        })
+        .nullish(),
+      freeSessionsLeft: zod.number().nullish(),
+    })
+    .nullish(),
+  studentName: zod.string().nullish(),
+});
+
+/**
+ * @summary Teacher accepts or declines a booking
+ */
+export const RespondToBookingParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const RespondToBookingBody = zod.object({
+  status: zod.enum(["Confirmed", "Declined"]),
+  teacherNote: zod.string().optional(),
+});
+
+export const RespondToBookingResponse = zod.object({
+  id: zod.number(),
+  studentId: zod.number(),
+  teacherId: zod.number(),
+  sessionTime: zod.coerce.date(),
+  durationMinutes: zod.number(),
+  status: zod.enum(["Pending", "Confirmed", "Declined", "Completed"]),
+  paymentStatus: zod.enum(["Free", "Paid", "Required"]),
+  studentMessage: zod.string().nullish(),
+  teacherNote: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+  teacher: zod
+    .object({
+      id: zod.number(),
+      userId: zod.number(),
+      ieltScore: zod.number(),
+      bio: zod.string(),
+      hourlyRate: zod.number(),
+      availableTimes: zod.string(),
+      specializations: zod.string(),
+      totalSessions: zod.number(),
+      rating: zod.number().nullish(),
+      createdAt: zod.coerce.date(),
+      user: zod
+        .object({
+          name: zod.string(),
+          email: zod.string(),
+        })
+        .nullish(),
+      freeSessionsLeft: zod.number().nullish(),
+    })
+    .nullish(),
+  studentName: zod.string().nullish(),
+});
+
+/**
+ * @summary Mark a booking as completed
+ */
+export const CompleteBookingParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const CompleteBookingBody = zod.object({
+  teacherNote: zod.string().optional(),
+});
+
+export const CompleteBookingResponse = zod.object({
+  id: zod.number(),
+  studentId: zod.number(),
+  teacherId: zod.number(),
+  sessionTime: zod.coerce.date(),
+  durationMinutes: zod.number(),
+  status: zod.enum(["Pending", "Confirmed", "Declined", "Completed"]),
+  paymentStatus: zod.enum(["Free", "Paid", "Required"]),
+  studentMessage: zod.string().nullish(),
+  teacherNote: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+  teacher: zod
+    .object({
+      id: zod.number(),
+      userId: zod.number(),
+      ieltScore: zod.number(),
+      bio: zod.string(),
+      hourlyRate: zod.number(),
+      availableTimes: zod.string(),
+      specializations: zod.string(),
+      totalSessions: zod.number(),
+      rating: zod.number().nullish(),
+      createdAt: zod.coerce.date(),
+      user: zod
+        .object({
+          name: zod.string(),
+          email: zod.string(),
+        })
+        .nullish(),
+      freeSessionsLeft: zod.number().nullish(),
+    })
+    .nullish(),
+  studentName: zod.string().nullish(),
+});
+
+/**
+ * @summary List notifications for current user
+ */
+export const ListNotificationsResponseItem = zod.object({
+  id: zod.number(),
+  userId: zod.number(),
+  message: zod.string(),
+  type: zod.string(),
+  isRead: zod.boolean(),
+  relatedId: zod.number().nullish(),
+  relatedType: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});
+export const ListNotificationsResponse = zod.array(
+  ListNotificationsResponseItem,
+);
+
+/**
+ * @summary Mark all notifications as read
+ */
+export const MarkAllNotificationsReadResponse = zod.object({
+  received: zod.boolean(),
+});
+
+/**
+ * @summary Mark a notification as read
+ */
+export const MarkNotificationReadParams = zod.object({
+  id: zod.coerce.number(),
+});
+
+export const MarkNotificationReadResponse = zod.object({
+  id: zod.number(),
+  userId: zod.number(),
+  message: zod.string(),
+  type: zod.string(),
+  isRead: zod.boolean(),
+  relatedId: zod.number().nullish(),
+  relatedType: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+});

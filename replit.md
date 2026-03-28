@@ -19,14 +19,24 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **Payments**: Stripe (requires STRIPE_SECRET_KEY, STRIPE_PRICE_ID, STRIPE_WEBHOOK_SECRET env vars)
 - **Auth**: JWT (SESSION_SECRET env var)
 
-## Project: Ben Academy MVP Sprint 2
+## Project: Ben Academy — Sprint 3
 
-An IELTS Writing Test preparation platform featuring:
+An IELTS Writing Test preparation platform with a Teacher Marketplace.
+
+### Sprint 2 Features (complete)
 - Secure timed writing tests (40 min, auto-save, tab-switch detection, lock after submit)
 - AI grading by "Ben AI" (OpenAI GPT) with band scores (0-9), detailed feedback on 4 IELTS criteria
 - Student dashboard with progress chart, weakness analysis, suggested tasks
 - Stripe monthly subscriptions (Free vs Paid test access)
 - JWT authentication with role-based access
+
+### Sprint 3 Features (complete)
+- **Teacher Marketplace**: Browse and filter teachers by IELTS score / hourly rate
+- **Teacher Profiles**: Teachers can set up profiles (IELTS score, bio, rate, availability, specializations)
+- **1:1 Session Booking**: Students book sessions (first 3 per teacher are free); teachers accept/decline/complete
+- **In-app Notifications**: Bell icon in navbar, real-time alerts for booking updates
+- **Teacher Dashboard**: Manage incoming bookings, respond, mark complete
+- **Student Bookings Page**: View all past and upcoming sessions with status badges
 
 ## Structure
 

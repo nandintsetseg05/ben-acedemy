@@ -182,3 +182,111 @@ export interface SubscriptionStatus {
   subscriptionStatus?: string | null;
   currentPeriodEnd?: string | null;
 }
+
+export type TeacherProfileUser = {
+  name: string;
+  email: string;
+} | null;
+
+export interface TeacherProfile {
+  id: number;
+  userId: number;
+  ieltScore: number;
+  bio: string;
+  hourlyRate: number;
+  availableTimes: string;
+  specializations: string;
+  totalSessions: number;
+  rating?: number | null;
+  createdAt: string;
+  user?: TeacherProfileUser;
+  freeSessionsLeft?: number | null;
+}
+
+export interface UpsertTeacherBody {
+  /**
+   * @minimum 0
+   * @maximum 9
+   */
+  ieltScore?: number;
+  bio?: string;
+  /** @minimum 0 */
+  hourlyRate?: number;
+  availableTimes?: string;
+  specializations?: string;
+}
+
+export interface CreateBookingBody {
+  teacherId: number;
+  sessionTime: string;
+  durationMinutes?: number;
+  studentMessage?: string;
+}
+
+export type RespondBookingBodyStatus =
+  (typeof RespondBookingBodyStatus)[keyof typeof RespondBookingBodyStatus];
+
+export const RespondBookingBodyStatus = {
+  Confirmed: "Confirmed",
+  Declined: "Declined",
+} as const;
+
+export interface RespondBookingBody {
+  status: RespondBookingBodyStatus;
+  teacherNote?: string;
+}
+
+export interface CompleteBookingBody {
+  teacherNote?: string;
+}
+
+export type BookingDetailStatus =
+  (typeof BookingDetailStatus)[keyof typeof BookingDetailStatus];
+
+export const BookingDetailStatus = {
+  Pending: "Pending",
+  Confirmed: "Confirmed",
+  Declined: "Declined",
+  Completed: "Completed",
+} as const;
+
+export type BookingDetailPaymentStatus =
+  (typeof BookingDetailPaymentStatus)[keyof typeof BookingDetailPaymentStatus];
+
+export const BookingDetailPaymentStatus = {
+  Free: "Free",
+  Paid: "Paid",
+  Required: "Required",
+} as const;
+
+export interface BookingDetail {
+  id: number;
+  studentId: number;
+  teacherId: number;
+  sessionTime: string;
+  durationMinutes: number;
+  status: BookingDetailStatus;
+  paymentStatus: BookingDetailPaymentStatus;
+  studentMessage?: string | null;
+  teacherNote?: string | null;
+  createdAt: string;
+  updatedAt: string;
+  teacher?: TeacherProfile | null;
+  studentName?: string | null;
+}
+
+export interface NotificationItem {
+  id: number;
+  userId: number;
+  message: string;
+  type: string;
+  isRead: boolean;
+  relatedId?: number | null;
+  relatedType?: string | null;
+  createdAt: string;
+}
+
+export type ListTeachersParams = {
+  minScore?: number;
+  maxRate?: number;
+};

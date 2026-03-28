@@ -22,6 +22,12 @@ tags:
     description: Student dashboard operations
   - name: payments
     description: Stripe payment operations
+  - name: teachers
+    description: Teacher marketplace operations
+  - name: bookings
+    description: 1:1 booking operations
+  - name: notifications
+    description: Notification operations
 paths:
   /healthz:
     get:
@@ -400,6 +406,306 @@ paths:
               schema:
                 $ref: "#/components/schemas/SubscriptionStatus"
 
+  /teachers:
+    get:
+      operationId: listTeachers
+      tags: [teachers]
+      summary: List all teachers (marketplace)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: minScore
+          in: query
+          schema:
+            type: number
+        - name: maxRate
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: List of teachers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeacherProfile"
+
+  /teachers/me:
+    get:
+      operationId: getMyTeacherProfile
+      tags: [teachers]
+      summary: Get own teacher profile
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Teacher profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeacherProfile"
+        "404":
+          description: Not a teacher
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: upsertTeacherProfile
+      tags: [teachers]
+      summary: Create or update own teacher profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertTeacherBody"
+      responses:
+        "200":
+          description: Updated teacher profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeacherProfile"
+
+  /teachers/{id}:
+    get:
+      operationId: getTeacher
+      tags: [teachers]
+      summary: Get a specific teacher profile
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Teacher profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeacherProfile"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bookings:
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Student requests a 1:1 session
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBookingBody"
+      responses:
+        "201":
+          description: Booking created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetail"
+        "400":
+          description: Validation error (time conflict, etc.)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden (only students can book)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bookings/student:
+    get:
+      operationId: listStudentBookings
+      tags: [bookings]
+      summary: Get all bookings for the current student
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BookingDetail"
+
+  /bookings/teacher:
+    get:
+      operationId: listTeacherBookings
+      tags: [bookings]
+      summary: Get all bookings for the current teacher
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BookingDetail"
+
+  /bookings/{id}:
+    get:
+      operationId: getBooking
+      tags: [bookings]
+      summary: Get a specific booking
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Booking detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bookings/{id}/respond:
+    put:
+      operationId: respondToBooking
+      tags: [bookings]
+      summary: Teacher accepts or declines a booking
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RespondBookingBody"
+      responses:
+        "200":
+          description: Updated booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetail"
+        "403":
+          description: Forbidden (only teacher of this booking)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bookings/{id}/complete:
+    put:
+      operationId: completeBooking
+      tags: [bookings]
+      summary: Mark a booking as completed
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompleteBookingBody"
+      responses:
+        "200":
+          description: Completed booking
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingDetail"
+
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      summary: List notifications for current user
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/NotificationItem"
+
+  /notifications/read-all:
+    put:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Done
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookResponse"
+
+  /notifications/{id}/read:
+    put:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark a notification as read
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated notification
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotificationItem"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -759,3 +1065,184 @@ components:
           nullable: true
       required:
         - isPaid
+
+    TeacherProfile:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        ieltScore:
+          type: number
+        bio:
+          type: string
+        hourlyRate:
+          type: number
+        availableTimes:
+          type: string
+        specializations:
+          type: string
+        totalSessions:
+          type: integer
+        rating:
+          type: number
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        user:
+          type: object
+          nullable: true
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+          required:
+            - name
+            - email
+        freeSessionsLeft:
+          type: integer
+          nullable: true
+      required:
+        - id
+        - userId
+        - ieltScore
+        - bio
+        - hourlyRate
+        - availableTimes
+        - specializations
+        - totalSessions
+        - createdAt
+
+    UpsertTeacherBody:
+      type: object
+      properties:
+        ieltScore:
+          type: number
+          minimum: 0
+          maximum: 9
+        bio:
+          type: string
+        hourlyRate:
+          type: number
+          minimum: 0
+        availableTimes:
+          type: string
+        specializations:
+          type: string
+
+    CreateBookingBody:
+      type: object
+      properties:
+        teacherId:
+          type: integer
+        sessionTime:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: integer
+          default: 60
+        studentMessage:
+          type: string
+      required:
+        - teacherId
+        - sessionTime
+
+    RespondBookingBody:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [Confirmed, Declined]
+        teacherNote:
+          type: string
+      required:
+        - status
+
+    CompleteBookingBody:
+      type: object
+      properties:
+        teacherNote:
+          type: string
+
+    BookingDetail:
+      type: object
+      properties:
+        id:
+          type: integer
+        studentId:
+          type: integer
+        teacherId:
+          type: integer
+        sessionTime:
+          type: string
+          format: date-time
+        durationMinutes:
+          type: integer
+        status:
+          type: string
+          enum: [Pending, Confirmed, Declined, Completed]
+        paymentStatus:
+          type: string
+          enum: [Free, Paid, Required]
+        studentMessage:
+          type: string
+          nullable: true
+        teacherNote:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        teacher:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/TeacherProfile"
+        studentName:
+          type: string
+          nullable: true
+      required:
+        - id
+        - studentId
+        - teacherId
+        - sessionTime
+        - durationMinutes
+        - status
+        - paymentStatus
+        - createdAt
+        - updatedAt
+
+    NotificationItem:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        message:
+          type: string
+        type:
+          type: string
+        isRead:
+          type: boolean
+        relatedId:
+          type: integer
+          nullable: true
+        relatedType:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - message
+        - type
+        - isRead
+        - createdAt
