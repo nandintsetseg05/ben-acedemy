@@ -4,29 +4,46 @@ Online IELTS prep platform: **ASP.NET Core 9 Web API** + **Blazor WebAssembly**,
 
 Aligned with **GSD** ([get-shit-done](https://github.com/gsd-build/get-shit-done)): see `.planning/` for project context and executor skills.
 
-## Prerequisites
+## Required tools
 
-- [.NET 9 SDK](https://dotnet.microsoft.com/download)
-- Optional: `dotnet tool install --global dotnet-ef` (migrations are applied automatically on API startup)
+1. **[.NET 9 SDK](https://dotnet.microsoft.com/download)** (9.0 or later compatible with the repo)
 
-## Configuration
+   ```bash
+   dotnet --version
+   ```
 
-1. **HTTPS dev certificate** (one-time):
+2. **Repo-local CLI tools** (EF Core migrations). From the **repository root**:
+
+   ```bash
+   dotnet tool restore
+   ```
+
+   This installs **`dotnet-ef` 9.0.2** from [`.config/dotnet-tools.json`](.config/dotnet-tools.json). Then `dotnet ef` works in this directory (no global install required).
+
+   If you prefer a machine-wide tool instead:
+
+   ```bash
+   dotnet tool install --global dotnet-ef --version 9.0.2
+   ```
+
+3. **HTTPS development certificate** (for `https://` localhost URLs):
 
    ```bash
    dotnet dev-certs https --trust
    ```
 
-2. **JWT** — `Server/appsettings.Development.json` includes a dev-only signing key. For other environments, set `Jwt:Key` to a random string **at least 32 characters** (environment variable or user secrets).
+## Configuration
 
-3. **OpenAI** — set your API key (never commit it):
+1. **JWT** — `Server/appsettings.Development.json` includes a dev-only signing key. For other environments, set `Jwt:Key` to a random string **at least 32 characters** (environment variable or user secrets).
+
+2. **OpenAI** — set your API key (never commit it):
 
    ```bash
    cd Server
    dotnet user-secrets set "OpenAI:ApiKey" "sk-..."
    ```
 
-4. **API URL for the Blazor client** — default in `Client/wwwroot/appsettings.json` is `https://localhost:7051`. If you change the API port or profile, update `ApiBaseUrl` to match.
+3. **API URL for the Blazor client** — default in `Client/wwwroot/appsettings.json` is `https://localhost:7051`. If you change the API port or profile, update `ApiBaseUrl` to match.
 
 ## Run the API (HTTPS profile)
 
@@ -62,7 +79,7 @@ JWT validation uses **the same options pipeline** as token issuance, so test `Jw
 
 ## EF Core migrations (manual)
 
-Migrations run on API startup (`DbInitializer`). To add a new migration after model changes:
+Migrations run on API startup (`DbInitializer`). To add or apply migrations manually, run **`dotnet tool restore`** once from the repo root, then:
 
 ```bash
 dotnet ef migrations add <Name> --project Server/BenAcademy.Server.csproj --startup-project Server/BenAcademy.Server.csproj
